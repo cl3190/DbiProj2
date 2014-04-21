@@ -1,3 +1,5 @@
+
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -66,8 +68,9 @@ public class SplashTable {
 		int r = (int) ( ( ((long)K * (long)M) ) % ( (long)Math.pow(2, 32)) );
 		//System.out.println(Integer.toBinaryString(r));
 		//r = (int)Math.abs( r / Math.pow(2, 31-lg) );
-		r = r >>> (32 - lg);
+		r = r >>> (32- lg);
 		//System.out.println(Integer.toBinaryString(r));
+		
 		return r;
 	}
 	
@@ -187,6 +190,26 @@ public class SplashTable {
 		return flag;
 	}
 	
+	public int probe(int key) {
+		//get candidate buckets
+		Set<Integer> buckets = getHashBuckets(key);		//must be less than or equal to h
+		int payload = 0;
+		for (int bucket:buckets)	//loop up to h times
+			for (Pair p:this.table.get(bucket)) {	//loop up to B times
+				int mask = (p.key == key) ? 0xFFFFFFFF : 0;
+				int tmp = p.payload & mask;
+				payload = payload | tmp;
+			}
+		
+		return payload;
+	}
+	
+	public void printResult(int key, int payload) {
+		if (payload == 0)
+			return;
+		System.out.println(key + " " + payload);
+	}
+	/*
 	public void probe(int k) {
 		//get candidate buckets
 		Set<Integer> buckets = getHashBuckets(k);		//must be less than or equal to h
@@ -205,19 +228,13 @@ public class SplashTable {
 		print(key, payload);
 	}
 	
-	//if key not found, do nothing, else print(key payload)
-	private void print(int key, int payload) {
-		if (key == 0)
-			return;
-		System.out.println(key + " " + payload);
-	}
-	
 	public void printTable() {
 		for (LinkedList<Pair> pairs:this.table)
 			for (Pair p:pairs) {
 				System.out.println(p.key + " " + p.payload);
 			}
 	}
+	*/
 	
 	//dump current status of the table
 	public void dumpfile() {
@@ -233,12 +250,13 @@ public class SplashTable {
 				System.out.println(p.key + " " + p.payload);
 		}
 		
-		//System.out.println("load factor: " + (double)this.N/(double)this.tableSize);
+		System.out.println("load factor: " + (double)this.N/(double)this.tableSize);
 	}
 	
 	public static void main(String[] args) {
 		//B R S h
-		SplashTable st = new SplashTable(2, 1000, 10, 3);
+		SplashTable st = new SplashTable(4, 1000, 10, 2);
+		/*
 		int key = 0;
 		int payload = 0;
 		boolean flag = true;
@@ -250,6 +268,10 @@ public class SplashTable {
 			flag = st.build(key, payload);
 		}
 		st.dumpfile();
+		*/
+		st.build(28, 33);
+		st.build(-313, 938);
+		st.printResult(-313, st.probe(-313));
 	}
 
 }
