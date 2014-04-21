@@ -14,7 +14,8 @@ int main(int argc, char** argv){
 	int32_t* loads;
 	int32_t multi[2];
 	int32_t i;
-	FILE *fp = fopen(*++argv, "r");
+	FILE *fp ;
+	fp =  fopen(*++argv, "r");
 	if(fp == NULL){
 		printf("Cannot find the dumpfile.\n");
 		return 1;
@@ -30,18 +31,18 @@ int main(int argc, char** argv){
 	}
 	
 	for(i=0;i<h;i++){
-		fscanf(fp, "%d", multi[i]);
+		fscanf(fp, "%d", &multi[i]);
 	}
 
-	keys = (int32_t*) malloc(pow(2,10)*sizeof(int32_t));
-	loads = (int32_t*) malloc(pow(2,10)*sizeof(int32_t));
+	keys = (int32_t*) malloc(pow(2,S)*sizeof(int32_t));
+	loads = (int32_t*) malloc(pow(2,S)*sizeof(int32_t));
 
-	for(i=0;i<pow(2,10);i++){
-		fscanf(fp, "%d", keys[i]);
-		fscanf(fp, "%d", loads[i]);
+	for(i=0;i<pow(2,S);i++){
+		fscanf(fp, "%d", &keys[i]);
+		fscanf(fp, "%d", &loads[i]);
 	}
 
-	while(scanf("%d", &i==1)){
+	while(scanf("%d", &i)==1){
 		int32_t load = probe(i,keys,loads,multi,S);
 		if(load){
 			printf("%d %d\n",i,load);
