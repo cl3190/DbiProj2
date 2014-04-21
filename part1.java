@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -66,7 +65,8 @@ public class SplashTable {
 		int lg = (int)(Math.log10(this.bucketNum)/Math.log10(2));
 		int r = (int) ( ( ((long)K * (long)M) ) % ( (long)Math.pow(2, 32)) );
 		//System.out.println(Integer.toBinaryString(r));
-		r = (int)Math.abs( r / Math.pow(2, 31-lg) );
+		//r = (int)Math.abs( r / Math.pow(2, 31-lg) );
+		r = r >>> (32 - lg);
 		//System.out.println(Integer.toBinaryString(r));
 		return r;
 	}
