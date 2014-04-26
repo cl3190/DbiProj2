@@ -4,7 +4,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.Set;
-
+import java.util.*;
+import java.io.*;
 
 class Pair {
 	public int key;
@@ -111,17 +112,19 @@ public class SplashTable {
 				candidates.add(hc);
 		}
 		//System.out.println("candidate buckets: " + candidates);
-		ArrayList<Integer> hc = new ArrayList<Integer>(candidates.size());
-		for (int h:hashCodes)
-			hc.add(h);
+		//ArrayList<Integer> hc = new ArrayList<Integer>(candidates.size());
+		//for (int h:hashCodes)
+			//hc.add(h);
 		
 		if (candidates.size() <= 1)
-			return hc.get(0);
+			//return hc.get(0);
+			return candidates.get(0);
 		
 		Random rd = new Random();
 		int randomBucket = Math.abs(rd.nextInt() % candidates.size());
 		//System.out.println("Random: " + randomBucket);
-		return hc.get( randomBucket );		
+		//return hc.get( randomBucket );		
+		return candidates.get( randomBucket );
 	}
 	
 	//directly insert the key it is already exists
@@ -179,7 +182,7 @@ public class SplashTable {
 			//else bucket is full, need to initiate re-insertions
 			else {
 				Pair tmp = new Pair(removed);
-				removed = new Pair(this.table.get(insertedBucket).remove());	//the removed key, need to be re-inserted
+				removed = this.table.get(insertedBucket).removeFirst();	//the removed key, need to be re-inserted
 				this.table.get(insertedBucket).add(tmp);
 				//flag = false;
 				reinsertNum++;
@@ -195,8 +198,11 @@ public class SplashTable {
 		int payload = 0;
 		for (int bucket:buckets)	//loop up to h times
 			for (Pair p:this.table.get(bucket)) {	//loop up to B times
+				//mask equals all 1s if it finds a matching key, else equals 0
 				int mask = (p.key == key) ? 0xFFFFFFFF : 0;
+				//use p.payload & mask give us the value of p.payload or 0
 				int tmp = p.payload & mask;
+				//payload | tmp give us the non-zero payload value
 				payload = payload | tmp;
 			}
 		
@@ -236,25 +242,30 @@ public class SplashTable {
 	*/
 	
 	//dump current status of the table
-	public void dumpfile() {
-		System.out.println(this.B + " " + this.S + " " + this.h + " " + this.N );
+	public String dumpfile() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.B + " " + this.S + " " + this.h + " " + this.N + "\n");
 		for (int i=0;i<this.hashM.length;i++)
-			System.out.print(this.hashM[i] + " ");
-		System.out.print("\n");
+			sb.append(this.hashM[i] + " ");
+		sb.append("\n");
 		for (LinkedList<Pair> pairs:this.table) {
 			//fill empty keys with 0, and 0 payload
 			while (pairs.size() < this.B)
 				pairs.add(new Pair(0,0));
 			for (Pair p:pairs)
-				System.out.println(p.key + " " + p.payload);
+				sb.append(p.key + " " + p.payload + "\n");
 		}
-		
-		System.out.println("load factor: " + (double)this.N/(double)this.tableSize);
+		return sb.toString();
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException{
 		//B R S h
-		SplashTable st = new SplashTable(4, 1000, 10, 2);
+		//SplashTable st = new SplashTable(2, 1000, 10, 2);
+		int B = Integer.parseInt(args[0]);
+		int R = Integer.parseInt(args[1]);
+		int S = Integer.parseInt(args[2]);
+		int h = Integer.parseInt(args[3]);
+		SplashTable st = new SplashTable(B, R, S, h);
 		/*
 		int key = 0;
 		int payload = 0;
@@ -266,11 +277,36 @@ public class SplashTable {
 			payload = rd.nextInt();
 			flag = st.build(key, payload);
 		}
-		st.dumpfile();
 		*/
-		st.build(28, 33);
-		st.build(-313, 938);
-		st.printResult(-313, st.probe(-313));
+
+		//build splash table from inputfile until it fails or all <key, payload> are inserted successfully
+		String inputfile = args[4];
+		Scanner scan = new Scanner(new File(inputfile));
+		boolean flag = true;
+		while (flag && scan.hasNextLine()) {
+			String[] pair = scan.nextLine().split(" ");
+			int key = Integer.parseInt(pair[0]);
+			int payload = Integer.parseInt(pair[1]);
+			flag = st.build(key, payload);
+		}
+		scan.close();
+		
+		//length=6 means the dumpfile argument is present, thus we need to dump the splash table
+		if (args.length == 6) {
+			String dumpfile = args[5];
+			PrintWriter pw = new PrintWriter(new File(dumpfile));
+			pw.write(st.dumpfile());
+			pw.close();
+		}
+		
+		//probe the splash table
+		Scanner probefile = new Scanner(System.in);
+		while (probefile.hasNextLine()) {
+			int key = Integer.parseInt(probefile.nextLine());
+			st.printResult(key, st.probe(key));
+		}
+		//System.out.println("load factor: " + (double)st.N/(double)st.tableSize);
+
 	}
 
 }
