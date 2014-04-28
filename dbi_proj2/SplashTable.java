@@ -202,7 +202,7 @@ public class SplashTable {
 				int mask = (p.key == key) ? 0xFFFFFFFF : 0;
 				//use p.payload & mask give us the value of p.payload or 0
 				int tmp = p.payload & mask;
-				//payload | tmp give us the non-zero payload value
+				//payload | tmp alwasys give us the non-zero payload value if the key was found on the previous steps
 				payload = payload | tmp;
 			}
 		
